@@ -6,7 +6,7 @@ import math
 from game_objects import Player, Coin, Platform, Enemy
 
 # Definimos las variables globales que se utilizarán a lo largo del código
-MUSIC = arcade.load_sound("Garrett_PrimerParcial/sounds/background_music.mp3")
+MUSIC = arcade.load_sound("PrimerParcial-Garrett/sounds/background_music.mp3")
 SCREEN_TITLE = "Platformer - Garrett"
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
