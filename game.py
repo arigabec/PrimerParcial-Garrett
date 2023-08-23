@@ -2,6 +2,7 @@
 import arcade
 import random
 import time
+import math
 from game_objects import Player, Coin, Platform, Enemy
 
 # Definimos las variables globales que se utilizarán a lo largo del código
@@ -12,6 +13,7 @@ SPRITE_PIXEL_SIZE = 128
 GRID_PIXEL_SIZE = SPRITE_PIXEL_SIZE * 0.4
 GRAVITY = 1
 PLAYER_JUMP_SPEED = 15
+BOUNCE_SPEED = 10
 
 class App(arcade.Window):
     def __init__(self):
@@ -23,6 +25,7 @@ class App(arcade.Window):
         self.coins = None
         self.physics_engine = None
         self.score = 0
+        self.health = 30
         self.collect_coin_sound = arcade.load_sound(":resources:sounds/coin1.wav")
         self.background_music = None
         self.alive = True
@@ -67,7 +70,7 @@ class App(arcade.Window):
         for values in platform_values:
             x, y, width, height = values
             self.platforms.append(Platform(x, y, width, height))
-            self.enemies.append(Enemy(x, y, width))
+            self.enemies.append(Enemy(x, y + 25, width))
 
         # Creamos al jugador en una posición inicial
         self.player_sprite = Player(100, 200)
@@ -91,7 +94,7 @@ class App(arcade.Window):
             
     def on_draw(self):
         # Dibujamos los elementos del juego dependiendo del estado del jugador (si esta vivo o muerto)
-        if self.alive: 
+        if self.alive and not self.won: 
             self.clear()
             self.draw_background()
             # Dibujamos todos los elementos del juego
@@ -109,10 +112,14 @@ class App(arcade.Window):
 
             score_text = f"Score: {self.score}"
             arcade.draw_text(score_text, start_x = 10, start_y = SCREEN_HEIGHT - 30, color = arcade.csscolor.WHITE, font_size = 18)
-        else:
+            score_text = f"Health: {self.health}"
+            arcade.draw_text(score_text, start_x = 10, start_y = SCREEN_HEIGHT - 60, color = arcade.csscolor.WHITE, font_size = 18)
+        elif not self.alive:
             self.draw_background()
             arcade.draw_lrwh_rectangle_textured(SCREEN_WIDTH/3, SCREEN_HEIGHT/3.5, 300, 300, arcade.load_texture("Garrett_PrimerParcial/img/game_over.png"))
-        
+        elif self.alive and self.won:
+            self.draw_background()
+
     def on_key_press(self, key, modifiers):
         # Definimos las acciones que deben ocurrir cuando presionamos las teclas del juego (UP, LEFT, RIGHT, SPACE)
         if key == arcade.key.UP:
@@ -129,6 +136,7 @@ class App(arcade.Window):
 
         if key == arcade.key.SPACE:
             self.alive = True
+            self.won = False
             self.setup()
 
     def on_key_release(self, key, modifiers):
@@ -158,18 +166,33 @@ class App(arcade.Window):
 
         # Verificamos colisiones con enemigos
         enemy_hit_list = arcade.check_for_collision_with_list(self.player_sprite, self.enemies)
-        if len(enemy_hit_list) > 0:
+        if enemy_hit_list:
+            # Disminuimos la vida del jugador
+            self.health -= 1
+            # Calcular el ángulo de rebote del jugador
+            for enemy in enemy_hit_list:
+                angle = math.atan2(self.player_sprite.center_y - enemy.center_y, self.player_sprite.center_x - enemy.center_x)
+                # Ajustar la velocidad en función del ángulo
+                self.player_sprite.change_x = math.cos(angle) * BOUNCE_SPEED
+                self.player_sprite.change_y = math.sin(angle) * BOUNCE_SPEED
+            
+        # Verificamos la vida el jugador
+        if self.health <= 0:
             print("¡Perdiste! Vuelve a iniciar el juego")
             time.sleep(1)
-            # Una vez que el jugador pierde, se muestra la pantalla de GameOver y se debe reiniciar el juego
             self.alive = False
+            # Una vez que el jugador pierde, se muestra la pantalla de GameOver y se debe reiniciar el juego
+            self.setup()
+            self.health = 30
 
         # Verificamos el score
         if self.score >= 100:
             print("Felicidades, ¡Ganaste!")
             time.sleep(1)
-            
-            # Una vez que el jugador gana, el juego se reinicia y el contador vuelve a 0
+            self.won = True
+            # Una vez que el jugador gana, el juego se reinicia
+            self.setup()
+            self.health = 30
             self.score = 0 
 
     # Este método permite centrar la cámara respecto a la posición del jugador

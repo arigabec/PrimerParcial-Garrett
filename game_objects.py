@@ -44,7 +44,7 @@ class Platform(arcade.Sprite):
 
 class Enemy(arcade.Sprite):
     def __init__(self, x, y, a):
-        super().__init__(":resources:images/enemies/slimeBlock.png", 0.5)
+        super().__init__(":resources:images/animated_characters/zombie/zombie_idle.png", 1)
         self.starting_x = x
         self.starting_y = y
         self.center_x = x
