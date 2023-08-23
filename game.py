@@ -25,6 +25,8 @@ class App(arcade.Window):
         self.score = 0
         self.collect_coin_sound = arcade.load_sound(":resources:sounds/coin1.wav")
         self.background_music = None
+        self.alive = True
+        self.won = False
 
     def setup(self):
         # Seteamos las cámaras
@@ -55,7 +57,6 @@ class App(arcade.Window):
             [1200, 300, 250, 20],
             [1500, 100, 200, 20],
             [1900, 300, 150, 20],
-            [2000, 400, 180, 20],
             [2300, 500, 250, 20],
             [2200, 300, 250, 20],
             [2500, 100, 200, 20]
@@ -84,28 +85,36 @@ class App(arcade.Window):
         # Seteamos el score inicial
         self.score = 0
 
-    def on_draw(self):
-        self.clear()
-
-        # Dibujamos todos los elementos del juego
-        self.camera_sprites.use()
+    # Método para dibujar el background
+    def draw_background(self):
         arcade.draw_lrwh_rectangle_textured(0, 0, SCREEN_WIDTH * 5, SCREEN_HEIGHT * 5, arcade.load_texture(":resources:images/backgrounds/abstract_1.jpg"))
-        self.coins.draw()
-        self.platforms.draw()
-        self.player_sprite.draw()
-        self.enemies.draw()
+            
+    def on_draw(self):
+        # Dibujamos los elementos del juego dependiendo del estado del jugador (si esta vivo o muerto)
+        if self.alive: 
+            self.clear()
+            self.draw_background()
+            # Dibujamos todos los elementos del juego
+            self.camera_sprites.use()
+            self.coins.draw()
+            self.platforms.draw()
+            self.player_sprite.draw()
+            self.enemies.draw()
 
-        # Llamamos al método .update() de los enemigos, de modo que inicien su movimiento sobre las plataformas
-        self.enemies.update()
+            # Llamamos al método .update() de los enemigos, de modo que inicien su movimiento sobre las plataformas
+            self.enemies.update()
 
-        # Llamamos al método .use() de la camera_gui, que nos permite cambiar el enfoque de la cámara junto con el jugador
-        self.camera_gui.use()
+            # Llamamos al método .use() de la camera_gui, que nos permite cambiar el enfoque de la cámara junto con el jugador
+            self.camera_gui.use()
 
-        score_text = f"Score: {self.score}"
-        arcade.draw_text(score_text, start_x = 10, start_y = SCREEN_HEIGHT - 30, color = arcade.csscolor.WHITE, font_size = 18)
+            score_text = f"Score: {self.score}"
+            arcade.draw_text(score_text, start_x = 10, start_y = SCREEN_HEIGHT - 30, color = arcade.csscolor.WHITE, font_size = 18)
+        else:
+            self.draw_background()
+            arcade.draw_lrwh_rectangle_textured(SCREEN_WIDTH/3, SCREEN_HEIGHT/3.5, 300, 300, arcade.load_texture("Garrett_PrimerParcial/img/game_over.png"))
         
     def on_key_press(self, key, modifiers):
-        # Definimos las acciones que deben ocurrir cuando presionamos las teclas del juego (UP, LEFT, RIGHT)
+        # Definimos las acciones que deben ocurrir cuando presionamos las teclas del juego (UP, LEFT, RIGHT, SPACE)
         if key == arcade.key.UP:
             if self.physics_engine.can_jump():
                 self.player_sprite.change_y = PLAYER_JUMP_SPEED
@@ -117,6 +126,10 @@ class App(arcade.Window):
         if key == arcade.key.RIGHT:
             self.player_sprite.right_key_down = True
             self.player_sprite.change_x = 5
+
+        if key == arcade.key.SPACE:
+            self.alive = True
+            self.setup()
 
     def on_key_release(self, key, modifiers):
         # Definimos las acciones que deben ocurrir cuando soltamos las teclas del juego (LEFT, RIGHT)
@@ -148,13 +161,14 @@ class App(arcade.Window):
         if len(enemy_hit_list) > 0:
             print("¡Perdiste! Vuelve a iniciar el juego")
             time.sleep(1)
-            # Una vez que el jugador pierde, el juego se cierra y se debe volver a iniciar
-            arcade.close_window()
+            # Una vez que el jugador pierde, se muestra la pantalla de GameOver y se debe reiniciar el juego
+            self.alive = False
 
         # Verificamos el score
         if self.score >= 100:
             print("Felicidades, ¡Ganaste!")
             time.sleep(1)
+            
             # Una vez que el jugador gana, el juego se reinicia y el contador vuelve a 0
             self.score = 0 
 
