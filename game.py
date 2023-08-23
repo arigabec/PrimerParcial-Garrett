@@ -114,11 +114,11 @@ class App(arcade.Window):
         elif not self.alive:
             # En caso de que el jugador pierda, se muestra una pantalla con una imagen de GameOver
             self.draw_background()
-            arcade.draw_lrwh_rectangle_textured(SCREEN_WIDTH/3, SCREEN_HEIGHT/3.5, 300, 300, arcade.load_texture("Garrett_PrimerParcial/img/game_over.png"))
+            arcade.draw_lrwh_rectangle_textured(SCREEN_WIDTH/3, SCREEN_HEIGHT/3.5, 300, 300, arcade.load_texture("PrimerParcial-Garrett/img/game_over.png"))
         elif self.alive and self.won:
             # En caso de que el jugador gane, se muestra una pantalla con una imagen de YouWin
             self.draw_background()
-            arcade.draw_lrwh_rectangle_textured(SCREEN_WIDTH/3, SCREEN_HEIGHT/3.5, 300, 300, arcade.load_texture("Garrett_PrimerParcial/img/you_win.png"))
+            arcade.draw_lrwh_rectangle_textured(SCREEN_WIDTH/3, SCREEN_HEIGHT/3.5, 300, 300, arcade.load_texture("PrimerParcial-Garrett/img/you_win.png"))
 
     def on_key_press(self, key, modifiers):
         # Definimos las acciones que deben ocurrir cuando presionamos las teclas del juego (UP, LEFT, RIGHT, SPACE)
