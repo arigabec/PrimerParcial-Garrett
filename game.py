@@ -5,7 +5,12 @@ import time
 import math
 from game_objects import Player, Coin, Platform, Enemy
 
+
+# DELIMITAR BORDES DONDE PUEDE LLEGAR EL JUGADOR
+# OPCIONAL: AÑADIR BANDERITA
+
 # Definimos las variables globales que se utilizarán a lo largo del código
+MUSIC = arcade.load_sound("Garrett_PrimerParcial/sounds/background_music.mp3")
 SCREEN_TITLE = "Platformer - Garrett"
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
@@ -13,7 +18,7 @@ SPRITE_PIXEL_SIZE = 128
 GRID_PIXEL_SIZE = SPRITE_PIXEL_SIZE * 0.4
 GRAVITY = 1
 PLAYER_JUMP_SPEED = 15
-BOUNCE_SPEED = 10
+BOUNCE_SPEED = 8
 
 class App(arcade.Window):
     def __init__(self):
@@ -25,9 +30,8 @@ class App(arcade.Window):
         self.coins = None
         self.physics_engine = None
         self.score = 0
-        self.health = 30
+        self.health = 10
         self.collect_coin_sound = arcade.load_sound(":resources:sounds/coin1.wav")
-        self.background_music = None
         self.alive = True
         self.won = False
 
@@ -37,8 +41,11 @@ class App(arcade.Window):
         self.camera_gui = arcade.Camera(self.width, self.height)
 
         # Seteamos la música de fondo y ajustamos el volumen de esta
-        self.background_music = arcade.Sound("Garrett_PrimerParcial/sounds/background_music.mp3", streaming=True)
-        self.background_music.play(volume=0.5, loop=True)
+        self.music_player = arcade.play_sound(MUSIC, volume=0.5, looping=True)
+        # if self.background_music_player:
+        #     self.background_music_player.stop()
+        # else:
+        #     self.background_music_player = self.background_music.play(volume=0.5, loop=True)
 
         # Definimos los SpriteList que almacenarán los sprites del juego
         self.coins = arcade.SpriteList()
@@ -46,23 +53,21 @@ class App(arcade.Window):
         self.enemies = arcade.SpriteList()
 
         # Generamos monedas de manera randómica
-        for i in range(20):
+        for i in range(15):
             x = random.randint(0, 2500)
             y = random.randint(0, 800)
             self.coins.append(Coin(x, y))
 
         # Define la matriz de posición de las plataformas
         platform_values = [
-            [300, 100, 200, 20],
+            [250, 100, 200, 20],
             [500, 300, 150, 20],
-            [100, 400, 180, 20],
             [700, 500, 250, 20],
             [1200, 300, 250, 20],
             [1500, 100, 200, 20],
             [1900, 300, 150, 20],
             [2300, 500, 250, 20],
-            [2200, 300, 250, 20],
-            [2500, 100, 200, 20]
+            [2200, 120, 250, 20]
         ]
 
         # Iteramos sobre la matriz de valores de plataformas
@@ -119,6 +124,7 @@ class App(arcade.Window):
             arcade.draw_lrwh_rectangle_textured(SCREEN_WIDTH/3, SCREEN_HEIGHT/3.5, 300, 300, arcade.load_texture("Garrett_PrimerParcial/img/game_over.png"))
         elif self.alive and self.won:
             self.draw_background()
+            arcade.draw_lrwh_rectangle_textured(SCREEN_WIDTH/3, SCREEN_HEIGHT/3.5, 300, 300, arcade.load_texture("Garrett_PrimerParcial/img/you_win.png"))
 
     def on_key_press(self, key, modifiers):
         # Definimos las acciones que deben ocurrir cuando presionamos las teclas del juego (UP, LEFT, RIGHT, SPACE)
@@ -137,6 +143,7 @@ class App(arcade.Window):
         if key == arcade.key.SPACE:
             self.alive = True
             self.won = False
+            arcade.stop_sound(self.music_player)
             self.setup()
 
     def on_key_release(self, key, modifiers):
@@ -154,6 +161,13 @@ class App(arcade.Window):
         # se mueva, recolecte monedas, etc)
         self.player_sprite.update()
         self.physics_engine.update()
+
+        # Delimitamos los bordes de la pantalla, de modo que el jugador no pueda salirse de estos
+        if self.player_sprite.center_x <= 0:
+            self.player_sprite.change_x = 0
+
+        if self.player_sprite.center_x >= 2400:
+             self.player_sprite.change_x = 0
 
         coin_hit_list = arcade.check_for_collision_with_list(self.player_sprite, self.coins)
         for coin in coin_hit_list:
@@ -182,8 +196,9 @@ class App(arcade.Window):
             time.sleep(1)
             self.alive = False
             # Una vez que el jugador pierde, se muestra la pantalla de GameOver y se debe reiniciar el juego
+            arcade.stop_sound(self.music_player)
             self.setup()
-            self.health = 30
+            self.health = 10
 
         # Verificamos el score
         if self.score >= 100:
@@ -191,8 +206,9 @@ class App(arcade.Window):
             time.sleep(1)
             self.won = True
             # Una vez que el jugador gana, el juego se reinicia
+            arcade.stop_sound(self.music_player)
             self.setup()
-            self.health = 30
+            self.health = 10
             self.score = 0 
 
     # Este método permite centrar la cámara respecto a la posición del jugador
@@ -200,10 +216,10 @@ class App(arcade.Window):
         screen_center_x = self.player_sprite.center_x - (self.camera_sprites.viewport_width / 2)
         screen_center_y = self.player_sprite.center_y - (self.camera_sprites.viewport_height / 2)
 
-        if screen_center_x < 0:
-            screen_center_x = 0
-        if screen_center_y < 0:
-            screen_center_y = 0
+        # Limitar el centro de la cámara al límite del eje x en 2500
+        screen_center_x = max(screen_center_x, 0)
+        screen_center_x = min(screen_center_x, 2400 - self.camera_sprites.viewport_width)
+        screen_center_y = max(screen_center_y, 0)
 
         player_centered = screen_center_x, screen_center_y
         self.camera_sprites.move_to(player_centered)

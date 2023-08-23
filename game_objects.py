@@ -47,7 +47,7 @@ class Enemy(arcade.Sprite):
         super().__init__(":resources:images/animated_characters/zombie/zombie_idle.png", 1)
         self.starting_x = x
         self.starting_y = y
-        self.center_x = x
+        self.center_x = x - 100
         self.center_y = y + 50
         self.change_x = 2
         self.distance_moved = 0
