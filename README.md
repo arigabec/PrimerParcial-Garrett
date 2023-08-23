@@ -1,4 +1,4 @@
-# PrimerParcial - Infografía
+# Primer Parcial - Infografía
 
 ### Nombre: Ariane Garrett
 ### Código: 54617
