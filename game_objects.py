@@ -5,6 +5,7 @@ import arcade
 COIN_SCALING = 0.5
 TILE_SCALING = 0.4
 
+# Clase que utilizamos para la creación del jugador
 class Player(arcade.Sprite):
     def __init__(self, x, y):
         super().__init__(":resources:images/animated_characters/male_adventurer/maleAdventurer_walk4.png", 1)
@@ -28,12 +29,14 @@ class Player(arcade.Sprite):
         if self.change_y > 0:
             self.texture = arcade.load_texture(":resources:images/animated_characters/male_adventurer/maleAdventurer_fall.png")
 
+# Clase que utilizamos para la creación de monedas
 class Coin(arcade.Sprite):
     def __init__(self, x, y):
         super().__init__(":resources:images/items/coinGold.png", COIN_SCALING)
         self.center_x = x
         self.center_y = y
 
+# Clase que utilizamos para la creación de plataformas
 class Platform(arcade.Sprite):
     def __init__(self, x, y, width, height):
         super().__init__(":resources:images/tiles/grassMid.png", TILE_SCALING)
@@ -42,6 +45,7 @@ class Platform(arcade.Sprite):
         self.width = width
         self.height = height
 
+# Clase que utilizamos para la creación de enemigos
 class Enemy(arcade.Sprite):
     def __init__(self, x, y, a):
         super().__init__(":resources:images/animated_characters/zombie/zombie_idle.png", 1)

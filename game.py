@@ -5,10 +5,6 @@ import time
 import math
 from game_objects import Player, Coin, Platform, Enemy
 
-
-# DELIMITAR BORDES DONDE PUEDE LLEGAR EL JUGADOR
-# OPCIONAL: AÑADIR BANDERITA
-
 # Definimos las variables globales que se utilizarán a lo largo del código
 MUSIC = arcade.load_sound("Garrett_PrimerParcial/sounds/background_music.mp3")
 SCREEN_TITLE = "Platformer - Garrett"
@@ -42,10 +38,6 @@ class App(arcade.Window):
 
         # Seteamos la música de fondo y ajustamos el volumen de esta
         self.music_player = arcade.play_sound(MUSIC, volume=0.5, looping=True)
-        # if self.background_music_player:
-        #     self.background_music_player.stop()
-        # else:
-        #     self.background_music_player = self.background_music.play(volume=0.5, loop=True)
 
         # Definimos los SpriteList que almacenarán los sprites del juego
         self.coins = arcade.SpriteList()
@@ -58,7 +50,7 @@ class App(arcade.Window):
             y = random.randint(0, 800)
             self.coins.append(Coin(x, y))
 
-        # Define la matriz de posición de las plataformas
+        # Definimos la matriz de posición de las plataformas
         platform_values = [
             [250, 100, 200, 20],
             [500, 300, 150, 20],
@@ -70,7 +62,7 @@ class App(arcade.Window):
             [2200, 120, 250, 20]
         ]
 
-        # Iteramos sobre la matriz de valores de plataformas
+        # Iteramos sobre la matriz de valores
         # Creamos las diferentes plataformas y sobre ellas, enemigos que debe evitar el jugador
         for values in platform_values:
             x, y, width, height = values
@@ -78,7 +70,7 @@ class App(arcade.Window):
             self.enemies.append(Enemy(x, y + 25, width))
 
         # Creamos al jugador en una posición inicial
-        self.player_sprite = Player(100, 200)
+        self.player_sprite = Player(50, 100)
 
         # Definimos un PhysicsEnginePlatformer, que nos permite manejar el comportamiento del jugador
         # respecto a las plataformas, de modo que este pueda caer sobre ellas
@@ -86,7 +78,7 @@ class App(arcade.Window):
             self.player_sprite, gravity_constant=GRAVITY, walls=self.platforms
         )
 
-        # Creamos un suelo, donde el jugador podrá caminar
+        # Creamos el suelo, donde el jugador podrá caminar
         floor = Platform(400, 10, SCREEN_WIDTH * 5, 20)
         self.platforms.append(floor)
 
@@ -102,7 +94,6 @@ class App(arcade.Window):
         if self.alive and not self.won: 
             self.clear()
             self.draw_background()
-            # Dibujamos todos los elementos del juego
             self.camera_sprites.use()
             self.coins.draw()
             self.platforms.draw()
@@ -115,14 +106,17 @@ class App(arcade.Window):
             # Llamamos al método .use() de la camera_gui, que nos permite cambiar el enfoque de la cámara junto con el jugador
             self.camera_gui.use()
 
+            # Mostramos el puntaje y la vida del jugador del pantalla
             score_text = f"Score: {self.score}"
             arcade.draw_text(score_text, start_x = 10, start_y = SCREEN_HEIGHT - 30, color = arcade.csscolor.WHITE, font_size = 18)
             score_text = f"Health: {self.health}"
             arcade.draw_text(score_text, start_x = 10, start_y = SCREEN_HEIGHT - 60, color = arcade.csscolor.WHITE, font_size = 18)
         elif not self.alive:
+            # En caso de que el jugador pierda, se muestra una pantalla con una imagen de GameOver
             self.draw_background()
             arcade.draw_lrwh_rectangle_textured(SCREEN_WIDTH/3, SCREEN_HEIGHT/3.5, 300, 300, arcade.load_texture("Garrett_PrimerParcial/img/game_over.png"))
         elif self.alive and self.won:
+            # En caso de que el jugador gane, se muestra una pantalla con una imagen de YouWin
             self.draw_background()
             arcade.draw_lrwh_rectangle_textured(SCREEN_WIDTH/3, SCREEN_HEIGHT/3.5, 300, 300, arcade.load_texture("Garrett_PrimerParcial/img/you_win.png"))
 
@@ -169,10 +163,12 @@ class App(arcade.Window):
         if self.player_sprite.center_x >= 2400:
              self.player_sprite.change_x = 0
 
+        # Detectamos colisiones con monedas
         coin_hit_list = arcade.check_for_collision_with_list(self.player_sprite, self.coins)
         for coin in coin_hit_list:
             arcade.play_sound(self.collect_coin_sound)
             coin.remove_from_sprite_lists()
+            # Seteamos el nuevo puntaje
             self.score += 10
 
         # Centramos la cámara de manera constante
@@ -183,10 +179,10 @@ class App(arcade.Window):
         if enemy_hit_list:
             # Disminuimos la vida del jugador
             self.health -= 1
-            # Calcular el ángulo de rebote del jugador
+            # Calculamos el ángulo con el que rebota el jugador cuando colisiona con un enemigo
             for enemy in enemy_hit_list:
                 angle = math.atan2(self.player_sprite.center_y - enemy.center_y, self.player_sprite.center_x - enemy.center_x)
-                # Ajustar la velocidad en función del ángulo
+                # Ajustamos la velocidad de rebote en función del ángulo
                 self.player_sprite.change_x = math.cos(angle) * BOUNCE_SPEED
                 self.player_sprite.change_y = math.sin(angle) * BOUNCE_SPEED
             
@@ -205,7 +201,7 @@ class App(arcade.Window):
             print("Felicidades, ¡Ganaste!")
             time.sleep(1)
             self.won = True
-            # Una vez que el jugador gana, el juego se reinicia
+            # Una vez que el jugador gana, se muestra la pantalla de YouWin y se debe reiniciar el juego
             arcade.stop_sound(self.music_player)
             self.setup()
             self.health = 10
@@ -216,7 +212,7 @@ class App(arcade.Window):
         screen_center_x = self.player_sprite.center_x - (self.camera_sprites.viewport_width / 2)
         screen_center_y = self.player_sprite.center_y - (self.camera_sprites.viewport_height / 2)
 
-        # Limitar el centro de la cámara al límite del eje x en 2500
+        # Limitamos el centro de la cámara al límite del eje x
         screen_center_x = max(screen_center_x, 0)
         screen_center_x = min(screen_center_x, 2400 - self.camera_sprites.viewport_width)
         screen_center_y = max(screen_center_y, 0)
